@@ -1,6 +1,6 @@
 Server Template AMI
 
-./servertemplate-ami.sh <hostname>
+./servertemplate-ami.sh HOSTNAME
 
 Funcionalidades:
 
