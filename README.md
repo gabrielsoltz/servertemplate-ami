@@ -1,0 +1,2 @@
+# servertemplate-ami
+First
