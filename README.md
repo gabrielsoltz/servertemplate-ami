@@ -1,5 +1,7 @@
 Server Template AMI
 
+Script para estandarizar AMI (Amazon Images). El Sistema operaivo default de Amazon EC2. 
+
 ./servertemplate-ami.sh HOSTNAME
 
 Funcionalidades:
