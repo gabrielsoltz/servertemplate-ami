@@ -4,10 +4,10 @@
 ########################################################################################################################
 SCRIPT_NAME="SERVERTEMPLATE-AMI"
 SCRIPT_DESCRIPTION="Server Template: AMI"
-SCRIPT_VERSION="0.1"
+SCRIPT_VERSION="0.2"
 SCRIPT_AUTHOR="Gabriel Soltz"
 SCRIPT_CONTACT="thegaby@gmail.com"
-SCRIPT_DATE="20-03-2015"
+SCRIPT_DATE="30-03-2015"
 SCRIPT_GIT="https://github.com/gabrielsoltz/servertemplate-ami"
 SCRIPT_WEB="www.3ops.com"
 ########################################################################################################################
@@ -39,9 +39,9 @@ echo "" | tee -a $LOG
 ###############################################################################
 ## GENERAL
 ###############################################################################
-# UPDATE SISTEMA
+# UPGRADE SISTEMA
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "UPDATE SISTEMA" | tee -a $LOG
+echo "UPGRADE SISTEMA" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 sudo yum -y upgrade 2>> $LOG && \
 echo "OK" | tee -a $LOG || \
@@ -90,9 +90,9 @@ sudo chkconfig sendmail off 1>> $LOG 2>> $LOG
 sleep 5
 echo "" | tee -a $LOG
 
-# NTP
+# ZONEDATE
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "NTP" | tee -a $LOG 
+echo "ZONEDATE" | tee -a $LOG 
 echo "--------------------------------------------------------" | tee -a $LOG
 echo "Eliminando NTP..." | tee -a $LOG
 sudo yum -y remove ntp 2>> $LOG && \
@@ -246,7 +246,7 @@ echo "" | tee -a $LOG
 
 # DESACTIVAR IPV6
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "CONFIGURACION IPV6" | tee -a $LOG
+echo "DESACTIVAR IPV6" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 if grep "NETWORKING_IPV6=" /etc/sysconfig/network; then 
 sudo sed -i "s/NETWORKING_IPV6=.*/NETWORKING_IPV6=no/g" /etc/sysconfig/network 1>> $LOG 2>> $LOG
