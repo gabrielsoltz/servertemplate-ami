@@ -4,7 +4,7 @@ Script en Bash para estandarizar Sistemas Amazon Images (AMI).
 Fué realizado para ejecutar previo a la instalación de los servicios productivos de cada servidor. 
 Realiza control de errores en cada uno de sus funcionalidades. Todo lo realizado se loguea en $LOG.
 
-Para Ejecutar: ./servertemplate-ami.sh <HOSTNAME>
+Para Ejecutar: ./servertemplate-ami.sh [HOSTNAME]
 
 Funcionalidades:
 
