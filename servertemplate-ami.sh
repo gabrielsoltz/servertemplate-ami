@@ -4,13 +4,23 @@
 ########################################################################################################################
 SCRIPT_NAME="SERVERTEMPLATE-AMI"
 SCRIPT_DESCRIPTION="Server Template: AMI"
-SCRIPT_VERSION="0.2"
+SCRIPT_VERSION="0.3"
 SCRIPT_AUTHOR="Gabriel Soltz"
 SCRIPT_CONTACT="thegaby@gmail.com"
-SCRIPT_DATE="30-03-2015"
+SCRIPT_DATE="06-05-2015"
 SCRIPT_GIT="https://github.com/gabrielsoltz/servertemplate-ami"
 SCRIPT_WEB="www.3ops.com"
 ########################################################################################################################
+
+###############################################################################
+## AWS CREDENTIALS
+###############################################################################
+# IAM PROFILE REQUIRE:
+# - CREATE TAGS
+# - CLOUDWATCH
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_REGION=us-east-1
 
 ###############################################################################
 ## INICIO
@@ -43,7 +53,7 @@ echo "" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 echo "UPGRADE SISTEMA" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
-sudo yum -y upgrade 2>> $LOG && \
+sudo yum -y upgrade 1>> $LOG 2>> $LOG && \
 echo "OK" | tee -a $LOG || \
 { echo " ! ERROR" | tee -a $LOG ; exit; }
 sleep 20
@@ -53,7 +63,7 @@ echo "" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 echo "ELIMINAR PAQUETES" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
-sudo yum -y remove java at ed words dash perl ruby20 bind-utils alsa-lib ntsysv javapackages-tools aws* 2>> $LOG && \
+sudo yum -y remove java at ed words dash perl ruby20 bind-utils alsa-lib ntsysv javapackages-tools 1>> $LOG 2>> $LOG && \
 echo "OK" | tee -a $LOG || { echo " ! ERROR" | tee -a $LOG ; exit; }
 sleep 20
 echo "" | tee -a $LOG
@@ -104,17 +114,26 @@ sudo ln -sf /usr/share/zoneinfo/America/Argentina/Buenos_Aires /etc/localtime 1>
 sudo sed -i 's/ZONE=.*/ZONE="America\/Argentina\/Buenos_Aires"/g' /etc/sysconfig/clock 1>> $LOG 2>> $LOG
 echo "" | tee -a $LOG
 
-# HOSTNAME
+# SET HOSTNAME
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "HOSTNAME" | tee -a $LOG
+echo "SET HOSTNAME" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 sudo sed -i "s/HOSTNAME=.*/HOSTNAME=$HOSTNAME/g" /etc/sysconfig/network 1>> $LOG 2>> $LOG
 sudo /bin/hostname "$HOSTNAME" 1>> $LOG 2>> $LOG
 echo "" | tee -a $LOG
 
-# CONFIGURACION IP
+# SET AMAZON TAGS
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "CONFIGURACION IP" | tee -a $LOG
+echo "SET AMAZON TAGS" | tee -a $LOG
+echo "--------------------------------------------------------" | tee -a $LOG
+export TAG_NAME="Name"
+export TAG_VALUE="$HOSTNAME"
+echo "Set Tag $TAG_NAME with value: $TAG_VALUE..." | tee -a $LOG
+aws ec2 create-tags --region $AWS_REGION --resources `/opt/aws/bin/ec2-metadata -i | cut -d" " -f2` --tags Key=$TAG_NAME,Value=$TAG_VALUE 1>> $LOG 2>> $LOG
+
+# SET DYNAMIC IP AS STATIC
+echo "--------------------------------------------------------" | tee -a $LOG
+echo "SET DYNAMIC IP AS STATIC" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 IF=$(/sbin/ip route get 8.8.8.8 | awk -- '{print $5}' | head -n1)
 IP=$(/sbin/ip route get 8.8.8.8 | awk -- '{print $7}' | head -n1)
@@ -345,7 +364,7 @@ echo " ADMIN PUB-KEY:" | tee -a $LOG
 sudo cat /home/$USUARIO/.ssh/$USUARIO-$(hostname).key.pub | tee -a $LOG
 echo "********************************************************" | tee -a $LOG
 echo "Elimino Keys" | tee -a $LOG
-rm -f /home/$USUARIO/.ssh/$USUARIO-$(hostname).key 1>> $LOG 2>> $LOG
+sudo rm -f /home/$USUARIO/.ssh/$USUARIO-$(hostname).key 1>> $LOG 2>> $LOG
 # SUDOERS ADMIN
 echo "Configuracion Sudoers" | tee -a $LOG
 sudo -E bash -c 'echo "$USUARIO ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USUARIO 1>> $LOG 2>> $LOG'
@@ -366,11 +385,14 @@ echo "--------------------------------------------------------" | tee -a $LOG
 echo "CLOUDWATCH" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 # INSTALL
-sudo wget -nv -c -P ~/ https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py 1>> $LOG 2>> $LOG
+sudo yum install -y awslogs 1>> $LOG 2>> $LOG
 echo " " | tee -a $LOG
-# SERVICIOS
+# CONFIG
+sudo sed -i '$a aws_access_key_id = '"$AWS_ACCESS_KEY_ID"'' /etc/awslogs/awscli.conf  1>> $LOG 2>> $LOG
+sudo sed -i '$a aws_secret_access_key = '"$AWS_SECRET_ACCESS_KEY"'' /etc/awslogs/awscli.conf  1>> $LOG 2>> $LOG
+# SERVICES
 sudo chkconfig --add awslogs 1>> $LOG 2>> $LOG
-sudo chkconfig awslogs on 1>> $LOG 2>> $LOG4
+sudo chkconfig awslogs on 1>> $LOG 2>> $LOG
 
 ###############################################################################
 ## FINAL
@@ -388,7 +410,10 @@ echo "--------------------------------------------------------" | tee -a $LOG
 echo "FIN" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
 
+###############################################################################
+## DELETE AMAZON USER (EC2-USER) AND REBOOT
+###############################################################################
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "Eliminar Sudo Amazon y Reiniciar" | tee -a $LOG
+echo "DELETE AMAZON USER (EC2-USER) AND REBOOT" | tee -a $LOG
 echo "--------------------------------------------------------" | tee -a $LOG
-sudo su root -c 'sudo rm -f /etc/sudoers.d/cloud-init; sudo reboot'
+sudo su root -c 'sudo userdel -fr ec2-user; sudo rm -f /etc/sudoers.d/cloud-init; sudo reboot' 1>> $LOG 2>> $LOG
