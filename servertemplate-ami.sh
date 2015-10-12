@@ -4,10 +4,10 @@
 ########################################################################################################################
 SCRIPT_NAME="SERVERTEMPLATE-AMI"
 SCRIPT_DESCRIPTION="Server Template: AMI"
-SCRIPT_VERSION="0.3"
+SCRIPT_VERSION="0.4"
 SCRIPT_AUTHOR="Gabriel Soltz"
 SCRIPT_CONTACT="thegaby@gmail.com"
-SCRIPT_DATE="06-05-2015"
+SCRIPT_DATE="12-10-2015"
 SCRIPT_GIT="https://github.com/gabrielsoltz/servertemplate-ami"
 SCRIPT_WEB="www.3ops.com"
 ########################################################################################################################
@@ -100,18 +100,23 @@ sudo chkconfig sendmail off 1>> $LOG 2>> $LOG
 sleep 5
 echo "" | tee -a $LOG
 
-# ZONEDATE
+# NTP + ZONEDATE
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "ZONEDATE" | tee -a $LOG 
+echo "NTP" | tee -a $LOG 
 echo "--------------------------------------------------------" | tee -a $LOG
-echo "Eliminando NTP..." | tee -a $LOG
-sudo yum -y remove ntp 2>> $LOG && \
-echo "OK" | tee -a $LOG || \
-{ echo " ! ERROR" | tee -a $LOG ; exit; }
-sleep 5
+NTP_SERVER="ntpdate pool.ntp.org"
+echo "Instalar NTP..." | tee -a $LOG
+sudo yum -y install ntp ntpdate 2>> $LOG && \
+echo "OK" | tee -a $LOG || { echo " ! ERROR" | tee -a $LOG ; exit; }
+sudo chkconfig --add ntpd 1>> $LOG 2>> $LOG
+sudo chkconfig ntpd on 1>> $LOG 2>> $LOG
 echo "Seteando Localtime..." | tee -a $LOG
 sudo ln -sf /usr/share/zoneinfo/America/Argentina/Buenos_Aires /etc/localtime 1>> $LOG 2>> $LOG
 sudo sed -i 's/ZONE=.*/ZONE="America\/Argentina\/Buenos_Aires"/g' /etc/sysconfig/clock 1>> $LOG 2>> $LOG
+echo "Seteando NTP SERVER..." | tee -a $LOG
+sudo sed -i '$a server '"$NTP_SERVER"' prefer' /etc/ntp.conf 1>> $LOG 2>> $LOG
+echo "NTPDate..." | tee -a $LOG
+sudo ntpdate $NTP_SERVER  1>> $LOG 2>> $LOG
 echo "" | tee -a $LOG
 
 # SET HOSTNAME

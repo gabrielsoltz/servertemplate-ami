@@ -11,9 +11,9 @@ Funcionalidades:
 1. UPGRADE SISTEMA
 2. ELIMINAR PAQUETES: Desintalación de Paquetes no necesarios
 3. DESACTIVAR SERVICIOS: Desactivación de Serivicios al Inicio no necesarios
-4. ZONEDATE: Eliminar Paquete NTP y Setear Zona Horaria.
-5. SETEAR HOSTNAME
-6. SETEAR AMAZON TAGS
+4. NTP + ZONEDATE
+5. SET HOSTNAME
+6. SET AMAZON TAGS
 7. CONFIGURACION IP DINAMICA ACTUAL COMO FIJA.
 8. SETEAR MOTD
 9. AJUSTES SYSCTL
